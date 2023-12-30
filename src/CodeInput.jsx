@@ -1,42 +1,72 @@
 import React from "react";
-import { getXmlRequestObject } from "./index";
+import { getCookies } from "./index";
+
+const getXmlRequestObject = () => {
+        return new XMLHttpRequest();
+}
 const CodeInput = () => {
-    let xhr = null;
 
     const createRoom = () => {
+        let xhr = null;
+        xhr = getXmlRequestObject();
+
         let hostInput = document.getElementById("host-name-input");
         let codeInput = document.getElementById("code-input");
         let idInput = document.getElementById("id-input");
+
         let host = hostInput.value;
         let id = idInput.value;
         let code = codeInput.value;
-        xhr = getXmlRequestObject();
+
         xhr.onreadystatechange = () => {
-            if (xhr.readystate == 4 && xhr.status == 201){
-                console.log(`Room with id: ${id} was created by ${host}`)
+            if (xhr.readyState == 4 && xhr.status == 200){
+                if(xhr.responseText == "Success"){
+                    console.log(`Room with id: ${id} was created by ${host}`);
+                    document.cookie = `username=${host};`;
+                    document.cookie = `server=${id};`;
+
+                    setTimeout(() => {
+                       window.location.reload();
+                    }, 500);
+                }else{
+                    //Will want to handle errors from the API here probably
+                    console.log("There was a problem with your submission");
+                }
             }
         }
-        xhr.open("POST", `http://localhost:5885/newServer/${host}/${id}/${code}`)
+        xhr.open("POST", `http://localhost:5885/newServer/${host}/${id}/${code}`);
         xhr.setRequestHeader("Content-Type", "application/json;charset=utf-8");
+        xhr.send(JSON.stringify({"data": `User: ${ host } created a room  with id: ${ id } with code: ${ code } `}));
     }
 
     const joinRoom = () => {
+        let xhr = null;
+        xhr = getXmlRequestObject();
+    
         let userInput = document.getElementById("username-input");
         let userRoomId = document.getElementById("room-id-input");
         let joinInput = document.getElementById("join-input");
-        if (userInput && userRoomId && joinInput){
-            let username = userInput.value;
-            let id = userRoomId.value;
-            let joinCode = joinInput.value;
-            xhr = getXmlRequestObject();
-            xhr.onreadystatechange = () => {
-                if (xhr.readystate == 4 && xhr.status == 200){
-                    console.log(`User: ${ username } joined room ${ id } with code ${ joinCode } `)
+
+        let username = userInput.value;
+        let id = userRoomId.value;
+        let joinCode = joinInput.value;
+
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState == 4 && xhr.status == 200){
+                console.log(`User: ${ username } joined room ${ id } with code ${ joinCode } `);
+                if(xhr.responseText == "Success"){
+                    document.cookie = `username=${username};`;
+                    document.cookie = `server=${id};`;
+
+                    setTimeout(() => {
+                       window.location.reload();
+                    }, 500);
                 }
             }
-            xhr.open("POST", `http://localhost:5885/addUser/${username}/${id}/${joinCode}`)
-            xhr.setRequestHeader("Content-Type", "application/json;charset=utf-8");
         }
+        xhr.open("POST", `http://localhost:5885/addUser/${username}/${id}/${joinCode}`);
+        xhr.setRequestHeader("Content-Type", "application/json;charset=utf-8");
+        xhr.send(JSON.stringify({"data": `User: ${ username } joined room ${ id } with code ${ joinCode } `}));
     }
 
     return (
@@ -58,7 +88,7 @@ const CodeInput = () => {
                         <input type="text" id="username-input" className="access-input" spellCheck="false" placeholder="Username:"/>
                         <input type="text" id="room-id-input" className="access-input" spellCheck="false" placeholder="Room:"/>
                         <input type="text" id="join-input" className="access-input" spellCheck="false" placeholder="Code:"/>
-                        <input type="button" id="join-button" className="access-button" onClick={ joinRoom() } value="Submit" />
+                        <input type="button" id="join-button" className="access-button" onClick={ joinRoom } value="Submit" />
                     </div>
                 </div>
             </div> 
@@ -67,3 +97,4 @@ const CodeInput = () => {
 };
 
 export default CodeInput;
+export { getXmlRequestObject };
