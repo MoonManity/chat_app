@@ -1,23 +1,13 @@
-from flask import Flask, session, request, Response, jsonify
-import flask
-from flask_session import Session
-from flask_cors import CORS 
-from time import ctime
-from uuid import uuid4
+from flask import Flask, request, Response, jsonify
+from flask_cors import CORS
+from flask_socketio import SocketIO
 import servers
-
-secret = uuid4().hex
-
-TIME = ctime()
-DAY: str = TIME.split(" ")[2]
 
 tracker = servers.ServerTracker()
 
 app = Flask(__name__)
-# app.config["SECRET_KEY"] = secret
-# Session(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 CORS(app)
-
 @app.route("/")
 def home():
     return "Hello Chat" 
@@ -53,26 +43,31 @@ def add_user(username, id, password):
                                 "Users": tracker.servers[id].users})
     return Response(result, 200)
 
-@app.route("/removeUser/<id>/<username>", methods=['POST', 'GET'])
+@app.route("/removeUser/<id>/<username>", methods=["POST", "GET"])
 def removeUser(username, id):
     result = tracker.remove_user(id, username)
     if request.method == "GET":
         return jsonify({ "Result": result })
     return Response(str(result), 200)
 
-@app.route("/sendMessage", methods=["POST", "GET"])
-def send_message():
-    if request.method == "POST":
-        id = str(request.args.get("id"))
-        username = str(request.args.get("username"))
-        message = str(request.args.get("message"))
-        tracker.add_message(id, username, message)
-        print(tracker.servers[id].messages)
-        return Response("success", 201)
-    else:
-        id = str(request.args.get("id"))
-        print(tracker.servers[id].users) 
-        return jsonify({"data": tracker.servers[id].messages})
+@app.route("/getMessages/<room>", methods=["GET"])
+def send_message(room):
+        id = room 
+        print(f"Sending messages for id: {id}")
+        print(f"Messages:\n{tracker.servers[id].messages}")
+        return jsonify({"Data": tracker.servers[id].messages})
+
+@socketio.on('message')
+def handle_message(data):
+    print(data)
+
+    id = data["id"]
+    username = data["username"]
+    message = data["message"]
+
+    tracker.add_message(id, username, message)
+    server_messages = tracker.servers[id].messages
+    socketio.emit('message', { "id": id, "messages": server_messages })
 
 if __name__ == "__main__":
-    app.run(port=5885)
+    socketio.run(app, use_reloader=True, log_output=True, port=5885)
