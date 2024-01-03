@@ -1,15 +1,19 @@
 from time import ctime
 
+class AuthenticationError(Exception):
+    #Thrown for Error when users are not allowed to create/join a server
+    pass
+
 class ServerError(Exception):
+    #Thrown when a server does not exist in the database
     pass
 
 class UsernameError(Exception):
+    #Thrown when a username is already taken on a server
     pass
 
-class RoomIdError(Exception):
-    pass
-
-class PassCodeError(Exception):
+class PasswordError(Exception):
+    #Thrown when a user cannot be authenticated due to submitting the wrong password
     pass
 
 class Server():
@@ -29,24 +33,25 @@ class ServerTracker():
     def clear_servers(self) -> None:
         self.servers.clear()
 
-    def server_check(self, id: str):
+    def server_check(self, id: str) -> bool:
         if id in self.servers.keys():
             return True
-        return Exception(ServerError)
+        return False 
 
-    def server_pw_check(self, id: str, password: str) -> bool | Exception:
+    def server_pw_check(self, id: str, password: str) -> bool:
         if self.servers[id].password == password:
             return True
-        return Exception(PassCodeError)
+        return False
 
 
     def create_server(self, host: str, id: str, password: str) -> str | Exception:
         if self.server_check(id):
             print(f"Server with id {id} already exists")
-            return Exception(RoomIdError) 
-        print(f"Server with id {id} has been successfully added")
+            return AuthenticationError("This server already exists")
+
         self.servers[id] = Server(host, id, password)
         self.servers[id].users.append(host)
+        print(f"Server with id {id} has been successfully added")
         return "Success"
 
     def add_user_to_server(self, username: str, id: str, password: str) -> str | Exception:
@@ -57,19 +62,17 @@ class ServerTracker():
                     print(f"User: {username} successfully added to Server: {id}")
                     return "Success"
                 else:
-                    print("Username is taken")
-                    return Exception(UsernameError)
+                    return UsernameError(f"Username: {username} is already taken") 
             else:
-                return "Code Error"
-        print(f"User: {username} could not be added to Server: {id}")
-        return "Id Error"
+                return PasswordError(f"Code: {password} is not correct") 
+        return ServerError(f"Server with id: {id} does not exist") 
 
     def add_message(self, id: str, username: str, message: str) -> None | Exception:
         server = self.servers[id] 
         if username in server.users:
             server.messages[ len(server.messages) ] = { "username": username, "message": message }
             return
-        return Exception(UsernameError)
+        return AuthenticationError("Username is not in server")
 
     def remove_user(self, id: str, username: str) -> bool | Exception:
         server = self.servers[id]
@@ -80,6 +83,6 @@ class ServerTracker():
                 self.servers.pop(id)
             print(server.users)
             return True
-        return Exception(ServerError)
+        return UsernameError(f"User: {username} could not be removed") 
 
 

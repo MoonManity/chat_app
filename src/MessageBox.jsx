@@ -2,21 +2,6 @@ import React, { useEffect, useState } from "react";
 import io from 'socket.io-client';
 import Message from "./Message";
 
-
-// const fetchMessages = async () => {
-//     let request = await fetch(`http://localhost:5885/getMessages/${props.roomId}`);
-//     let response = await request.json();
-//     let ls = [];
-//     console.log(messages);
-//     if (response.messages){
-//         Object.entries(response.messages)
-//             .forEach(item => { ls.push(item[1]) });
-//         setMessages(ls);
-//     }
-// }
-// const [roomId, setRoomId ]= useState('');
-// ------------------------------------------------------------------------------------------------------------------
-
 const MessageBox = (props) => {
 
     const [messages, setMessages] = useState([]);
