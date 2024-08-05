@@ -19,7 +19,7 @@ const App = () => {
             console.log("removeUser failed");
         }
     }
-
+    
     if (username != "" && roomId != ""){
         return(
             <div>
@@ -35,6 +35,7 @@ const App = () => {
                 }} 
                 functionJR = { () => {
                     joinRoom(setUsername, setRoomId)
+
                 }} 
             />
         )

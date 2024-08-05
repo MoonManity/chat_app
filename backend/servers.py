@@ -1,4 +1,5 @@
 from time import ctime
+from typing import Dict
 
 class AuthenticationError(Exception):
     #Thrown for Error when users are not allowed to create/join a server
@@ -22,13 +23,13 @@ class Server():
         self.id = id
         self.password = pw
         self.users = [] #List of Strings for user-ids
-        self.messages = {} 
+        self.messages = {}
 
 class ServerTracker():
     def __init__(self):
         T = ctime()
         self.DAY = T.split(' ')[2]
-        self.servers = {} #HashMap of Keys( Ids(String), ServerObjects )
+        self.servers: Dict[str, Server]= {} #HashMap of Keys( Ids(String), ServerObjects )
         
     def clear_servers(self) -> None:
         self.servers.clear()
@@ -61,10 +62,8 @@ class ServerTracker():
                     self.servers[id].users.append(username)
                     print(f"User: {username} successfully added to Server: {id}")
                     return "Success"
-                else:
-                    return UsernameError(f"Username: {username} is already taken") 
-            else:
-                return PasswordError(f"Code: {password} is not correct") 
+                return UsernameError(f"Username: {username} is already taken") 
+            return PasswordError(f"Code: {password} is not correct") 
         return ServerError(f"Server with id: {id} does not exist") 
 
     def add_message(self, id: str, username: str, message: str) -> None | Exception:
@@ -84,5 +83,10 @@ class ServerTracker():
             print(server.users)
             return True
         return UsernameError(f"User: {username} could not be removed") 
+    
+    def get_all_messages(self, id: str):
+        return self.servers[id].messages
+
+
 
 

@@ -3,20 +3,33 @@ import io from 'socket.io-client';
 import Message from "./Message";
 
 const MessageBox = (props) => {
+    // async function getInitMessages () {
+    //     let request = await fetch(`http://localhost:5885/getInitMessages/${props.roomId}`);
+    //     let response = await request.json();
+    //     console.log(response);
+    //     if (response["Result"] = "success"){
+    //         window.location.reload();
+    //         return response.messages;
+    //     }else{
+    //         console.log("removeUser failed");
+    //         return {};
+    //     }
+    // };
 
-    const [messages, setMessages] = useState([]);
-    const [inputMessage, setInputMessage] = useState('');
-    
     const sendMessage = () => {
         let message = document.getElementById("message-input").value;
         console.log(message);
         setInputMessage(message);
         const socket = io('http://localhost:5885');
-        console.log(`( MessageBox: sendMessage )${ inputMessage }`);
-        console.log(`( MessageBox: sendMessage ) Id: ${ props.roomId }`);
+        // console.log(`( MessageBox: sendMessage )${ inputMessage }`);
+        // console.log(`( MessageBox: sendMessage ) Id: ${ props.roomId }`);
+        console.log(`{ username: ${props.username}, id: ${props.roomId}, message : ${message}}`);
+        console.log("sendMessage -> messages", messages);
         socket.emit('message', { username: props.username, id: props.roomId, message : message })
     }
 
+    const [messages, setMessages] = useState([]);
+    const [inputMessage, setInputMessage] = useState('');
 
     useEffect(() => {
         //Establish a WebSocket connection when the component mounts in the application
@@ -26,17 +39,36 @@ const MessageBox = (props) => {
         socket.on('message', (data) => {
             console.log("Data from socket:", data);
             console.log("Data.Messages from socket:", data.messages);
-            console.log(Object.entries(data.messages));
             let ls = [];
             if (data.id == props.roomId){
-                Object.entries(data.messages)
-                    .forEach(item => { ls.push(item[1]) });
+                console.log("blah", data.messages);
+                // data.messages.map((item) => (ls.push(item)) )
+                for (const item in data.messages){
+                    ls.push(data.messages[item]);
+                }
             }
             setMessages(ls);
         })
          return () => { socket.disconnect() };
 
      },[inputMessage]);
+
+    useEffect( async ()=>{
+        let request = await fetch(`http://localhost:5885/getInitMessages/${props.roomId}`);
+        try{
+            const response = await request.json();
+            console.log(response);
+            let ls = [];
+            console.log("blah", response.messages);
+            for (const item in response.messages){
+                ls.push(response.messages[item]);
+            }
+            setMessages(ls);
+        }catch (e){
+            //This would be where we would add any animations for user authentication errors.
+            console.log(`User ran into a problem when joining room ${props.roomId}`);
+        }
+    }, [props.roomId])
 
     return (
             <div id="box-root" >

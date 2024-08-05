@@ -45,11 +45,12 @@ def removeUser(username, id):
         print(e)
         return abort(404, e)
 
-@app.route("/getMessages/<roomId>", methods=["GET"])
-def send_message(roomId):
+
+@app.route("/getInitMessages/<roomId>", methods=["GET"])
+def getInitMessages(roomId):
         print(f"Sending messages for id: {roomId}")
         print(f"Messages:\n{tracker.servers[roomId].messages}")
-        return jsonify({"Data": tracker.servers[roomId].messages})
+        return jsonify({"messages": tracker.servers[roomId].messages})
 
 @socketio.on('message')
 def handle_message(data):
@@ -62,6 +63,8 @@ def handle_message(data):
     tracker.add_message(id, username, message)
     server_messages = tracker.servers[id].messages
     socketio.emit('message', { "id": id, "messages": server_messages })
+
+
 
 if __name__ == "__main__":
     socketio.run(app, use_reloader=True, log_output=True, port=5885)
