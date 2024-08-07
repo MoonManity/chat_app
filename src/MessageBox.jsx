@@ -1,28 +1,14 @@
 import React, { useEffect, useState } from "react";
 import io from 'socket.io-client';
 import Message from "./Message";
+import { API_URL } from "./App";
 
 const MessageBox = (props) => {
-    // async function getInitMessages () {
-    //     let request = await fetch(`http://localhost:5885/getInitMessages/${props.roomId}`);
-    //     let response = await request.json();
-    //     console.log(response);
-    //     if (response["Result"] = "success"){
-    //         window.location.reload();
-    //         return response.messages;
-    //     }else{
-    //         console.log("removeUser failed");
-    //         return {};
-    //     }
-    // };
-
     const sendMessage = () => {
         let message = document.getElementById("message-input").value;
         console.log(message);
         setInputMessage(message);
-        const socket = io('http://localhost:5885');
-        // console.log(`( MessageBox: sendMessage )${ inputMessage }`);
-        // console.log(`( MessageBox: sendMessage ) Id: ${ props.roomId }`);
+        const socket = io(`http://${API_URL}:5885`);
         console.log(`{ username: ${props.username}, id: ${props.roomId}, message : ${message}}`);
         console.log("sendMessage -> messages", messages);
         socket.emit('message', { username: props.username, id: props.roomId, message : message })
@@ -33,7 +19,7 @@ const MessageBox = (props) => {
 
     useEffect(() => {
         //Establish a WebSocket connection when the component mounts in the application
-        const socket = io('http://localhost:5885');
+        const socket = io(`http://${API_URL}:5885`);
         
         //Listen for incoming messages
         socket.on('message', (data) => {
@@ -54,7 +40,7 @@ const MessageBox = (props) => {
      },[inputMessage]);
 
     useEffect( async ()=>{
-        let request = await fetch(`http://localhost:5885/getInitMessages/${props.roomId}`);
+        let request = await fetch(`http://${API_URL}:5885/getInitMessages/${props.roomId}`);
         try{
             const response = await request.json();
             console.log(response);

@@ -3,13 +3,13 @@ import Header from "./Header";
 import MessageBox from "./MessageBox";
 import CodeInput, { createRoom, joinRoom } from "./CodeInput";
 
-
+export const API_URL = "localhost";
 const App = () => {
     const [username, setUsername] = useState("");
     const [roomId, setRoomId] = useState("");
 
     const removeUser = async () => {
-        let request = await fetch(`http://localhost:5885/removeUser/${roomId}/${username}`)
+        let request = await fetch(`http://${API_URL}:5885/removeUser/${roomId}/${username}`)
         let response = await request.json()
         console.log(response);
         if (response["Result"] = "success"){

@@ -1,11 +1,12 @@
 import React from "react";
+import { API_URL } from "./App";
 
 const createRoom = async (setUsernameCb, setRoomIdCb) => {
     let username = document.getElementById("host-name-input").value;
     let roomId = document.getElementById("id-input").value;
     let code = document.getElementById("code-input").value;
     
-    let request = await fetch(`http://localhost:5885/newServer/${username}/${roomId}/${code}`);
+    let request = await fetch(`http://${API_URL}:5885/newServer/${username}/${roomId}/${code}`);
     try{
         let response = await request.json();
         console.log(`Response: ${response["Result"]}`);
@@ -29,7 +30,7 @@ const joinRoom = async (setUsernameCB, setRoomIdCB) => {
     let roomId = document.getElementById("join-id-input").value;
     let code = document.getElementById("join-code-input").value;
     
-    let request = await fetch(`http://localhost:5885/addUser/${username}/${roomId}/${code}`)
+    let request = await fetch(`http://${API_URL}:5885/addUser/${username}/${roomId}/${code}`)
     try{
         const response = await request.json();
         console.log(response);
